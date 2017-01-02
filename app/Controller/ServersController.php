@@ -811,6 +811,7 @@ class ServersController extends AppController {
 		try {
 			$HttpSocket = $syncTool->setupHttpSocket();
 			$response = $HttpSocket->get('https://api.github.com/repos/MISP/MISP/tags');
+			file_put_contents('/tmp/misp_test', json_encode($response, true));
 			$tags = $response->body;
 		} catch (Exception $e) {
 			return false;
