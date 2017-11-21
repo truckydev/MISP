@@ -321,10 +321,14 @@ class Attribute extends AppModel {
 					'desc' => 'A human being - natural person',
 					'types' => array('first-name', 'middle-name', 'last-name', 'date-of-birth', 'place-of-birth', 'gender', 'passport-number', 'passport-country', 'passport-expiration', 'redress-number', 'nationality', 'visa-number', 'issue-date-of-the-visa', 'primary-residence', 'country-of-residence', 'special-service-request', 'frequent-flyer-number', 'travel-details', 'payment-details', 'place-port-of-original-embarkation', 'place-port-of-clearance', 'place-port-of-onward-foreign-destination', 'passenger-name-record-locator-number', 'comment', 'text', 'other', 'phone-number')
 			),
+			'Regex' => array(
+					'desc' => 'A regex in PCRE format',
+					'types' => array('filename', 'domain', 'hostname', 'url', 'link', 'uri', 'email-src', 'email-dst', 'user-agent', 'windows-scheduled-task', 'windows-service-displayname', 'windows-service-name')
+			),
 			'Other' => array(
 					'desc' => 'Attributes that are not part of any other category or are meant to be used as a component in MISP objects in the future',
 					'types' => array('comment', 'text', 'other', 'size-in-bytes', 'counter', 'datetime', 'cpe', 'port', 'float', 'hex', 'phone-number')
-					)
+			)
 	);
 
 	public $defaultCategories = array(
@@ -752,7 +756,7 @@ class Attribute extends AppModel {
 
 	public function validateAttributeValue($fields) {
 		$value = $fields['value'];
-		return $this->runValidation($value, $this->data['Attribute']['type']);
+		return $this->runValidation($value, $this->data['Attribute']['type'], $this->data['Attribute']['category']);
 	}
 
 	private $__hexHashLengths = array(
@@ -769,9 +773,24 @@ class Attribute extends AppModel {
 			'sha512/224' => 56,
 			'sha512/256' => 64,
 	);
+	public function isRegularExpression($string) {
+		set_error_handler(function() {}, E_WARNING);
+		$isRegularExpression = preg_match($string, "") !== FALSE;
+		restore_error_handler();
+		return $isRegularExpression;
+	}
 
-	public function runValidation($value, $type) {
+	public function runValidation($value, $type, $category) {
 		$returnValue = false;
+		// Don't use validation for "regex category"
+		if (isset($category)){
+			if ($category === "Regex"){
+				// TODO
+				// $tmp = isRegularExpression($value);
+				// CakeLog::write('debug', print_r($tmp, true));
+				return TRUE;
+			}
+		}
 		// check data validation
 		switch ($type) {
 			case 'md5':
