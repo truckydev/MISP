@@ -34,6 +34,9 @@
 	Router::connect('/logs/admin_search/*', array('controller' => 'logs', 'action' => 'search', 'admin' => true));
 	Router::connect('/logs/admin_index/*', array('controller' => 'logs', 'action' => 'index', 'admin' => true));
 
+	// add route for search v2 api
+	Router::connect('/search/*',array('controller' => 'search', 'action' => 'search', "[method]" => "POST"));
+
 	// Activate REST
 	Router::mapResources(array('events', 'attributes'));
 	Router::parseExtensions('xml', 'json');
