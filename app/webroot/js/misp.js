@@ -2909,7 +2909,7 @@ function loadTagTreemap() {
 
 function loadSightingsData(timestamp) {
 	url = "/sightings/toplist";
-	if (timestamp != undefined) {
+	if (typeof timestamp != 'undefined') {
 		url = url + '/' + timestamp;
 	}
 	$.ajax({

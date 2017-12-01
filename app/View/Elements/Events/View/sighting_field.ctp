@@ -20,10 +20,20 @@
       $s = (!empty($sightingsData['data'][$object['id']]['sighting']['count']) ? $sightingsData['data'][$object['id']]['sighting']['count'] : 0);
       $f = (!empty($sightingsData['data'][$object['id']]['false-positive']['count']) ? $sightingsData['data'][$object['id']]['false-positive']['count'] : 0);
       $e = (!empty($sightingsData['data'][$object['id']]['expiration']['count']) ? $sightingsData['data'][$object['id']]['expiration']['count'] : 0);
+      // $ps = (!empty($sightingsData['data'][$object['id']]['period-of-interest-from']['count']) ? $sightingsData['data'][$object['id']]['period-of-interest-from']['count'] : 0);
+      // $pe = (!empty($sightingsData['data'][$object['id']]['period-of-interest-until']['count']) ? $sightingsData['data'][$object['id']]['period-of-interest-until']['count'] : 0);    
     ?>
   </span>
   <span id="ownSightingCount_<?php echo h($object['id']); ?>" class="bold sightingsCounter_<?php echo h($object['id']); ?>" data-placement="top" data-toggle="popover" data-trigger="hover" data-content="<?php echo isset($sightingsData['data'][$object['id']]['html']) ? $sightingsData['data'][$object['id']]['html'] : ''; ?>">
-    <?php echo '(<span class="green">' . h($s) . '</span>/<span class="red">' . h($f) . '</span>/<span class="orange">' . h($e) . '</span>)'; ?>
+    <?php echo '(<span class="green">' . h($s) . '</span>/<span class="red">' . h($f) . '</span>/<span class="orange">' . h($e) . '</span>)'; 
+      // echo '(
+      //   <span class="green">' . h($s) . '</span>
+      //   /<span class="red">' . h($f) . '</span>
+      //   /<span class="red">' . h($e) . '</span>
+      //   /<span class="red">' . h($ps) . '</span>
+      //   /<span class="red">' . h($pe) . '</span>
+      // )';    
+    ?>
   </span>
 </td>
 <td class="short">

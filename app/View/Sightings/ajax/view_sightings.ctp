@@ -8,7 +8,9 @@
 
 	var colours = {
 		'Sighting': 'blue',
-		'False-positive': 'red'
+		'False-positive': 'red',
+		'period-of-interest-from': 'green',
+		'period-of-interest-until': 'gray'
 	}
 
 	var margin = {

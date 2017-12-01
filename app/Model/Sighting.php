@@ -18,8 +18,9 @@ class Sighting extends AppModel {
 		'org_id' => 'numeric',
 		'date_sighting' => 'numeric',
 		'type' => array(
-			'rule' => array('inList', array(0, 1, 2)),
-			'message' => 'Invalid type. Valid options are: 0 (Sighting), 1 (False-positive), 2 (Expiration).'
+			'rule' => array(
+				'inList', array(0, 1, 2, 3, 4)),
+				'message' => 'Invalid type. Valid options are: 0 (Sighting), 1 (False-positive), 2 (Expiration), 4 (period-of-interest-from), 5 (period-of-interest-until),.'
 		)
 	);
 
@@ -35,7 +36,9 @@ class Sighting extends AppModel {
 	public $type = array(
 		0 => 'sighting',
 		1 => 'false-positive',
-		2 => 'expiration'
+		2 => 'expiration',
+		3 => 'period-of-interest-from',
+		4 => 'period-of-interest-until'
 	);
 
 	public function beforeValidate($options = array()) {
@@ -230,7 +233,7 @@ class Sighting extends AppModel {
 				}
 			}
 		}
-		if (!in_array($type, array(0, 1, 2))) {
+		if (!in_array($type, array(0, 1, 2, 3, 4))) {
 			return 'Invalid type, please change it before you POST 1000000 sightings.';
 		}
 		$attributes = $this->Attribute->fetchAttributes($user, array('conditions' => $conditions, 'flatten' => 1));

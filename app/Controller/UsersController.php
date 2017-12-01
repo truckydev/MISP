@@ -1369,7 +1369,7 @@ class UsersController extends AppController {
 			if ($v['Sighting']['source'] == '') {
 				$v['Sighting']['source'] = 'Undefined';
 			}
-			$v['Sighting']['type'] = array('sighting', 'false-positive', 'expiration')[$v['Sighting']['type']];
+			$v['Sighting']['type'] = array('sighting', 'false-positive', 'expiration', 'period-of-interest-from', 'period-of-interest-until')[$v['Sighting']['type']];
 			if (isset($data[$v['Sighting']['source']][$v['Sighting']['type']])) {
 				$data[$v['Sighting']['source']][$v['Sighting']['type']]++;
 			} else {

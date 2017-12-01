@@ -215,7 +215,7 @@ class SightingsController extends AppController {
 		$this->set('org_id', $org_id);
 		$this->set('rawId', $rawId);
 		$this->set('context', $context);
-		$this->set('types', array('Sighting', 'False-positive', 'Expiration'));
+		$this->set('types', array('Sighting', 'False-positive', 'Expiration', 'period-of-interest-from', 'period-of-interest-until'));
 		$this->set('sightings', $sightings);
 		$this->layout = false;
 		$this->render('ajax/list_sightings');
