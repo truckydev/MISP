@@ -61,16 +61,16 @@ class SearchController extends AppController {
      * @todo 
      */
     private function __checkLevelCount($query) {
-        // return count($query[0]);
+        return count($query[0]);
         if (count($query[0]) !== 1){
             // throw new BadRequestException("error : First level of your query key have more than 1 object. Help : Try with only {key:value} like { attributes.tag : type:OSINT }");
         }elseif (count($query[0]) === 1 ){
-            if ( strtolower(key($query[0])) !== "or" && strtolower(key($query[0])) !== "and") {
+            if ( strtolower(key($query[0])) !== "or" && strtolower(key($query[0])) !== "and" ) {
                 $countKey = count(explode(".", key($query[0])));
-                // no scope specified make events as default
+                // no scope specified make "events" as default
                 if ( $countKey === 1 ) {
                     return array("events.".key($query[0]) => $query[0][key($query[0])] );
-                }else{
+                } else {
                     return $query[0];
                 }
             }
@@ -224,7 +224,7 @@ class SearchController extends AppController {
 
 
         // $debug['data'] = $this->request->data;
-        // $debug['scope'] = $scope;
+        $debug['scope'] = $scope;
         // $debug['async'] = $async;
         // $debug['expand'] = $expand;
         // $debug['isJsonHeader'] = $this->response->type();
