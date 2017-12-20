@@ -43,12 +43,34 @@ class SearchController extends AppController {
      */
     private function __getAsyncData($rawData) {
         $async = false;
-        if (isset($rawData['scoasyncpe'])) {
+        if (isset($rawData['async'])) {
             if ($rawData['async'] === True){
                 $async = True;
             }
         }
         return $async;
+    }
+
+    /**
+     * check if simple key is like scope.type
+     * @param object $obj like {$key : values}
+     * @return composite key with events as default
+     */
+    private function __checkCompositeKey($obj) {
+        if ( count(explode(".", key($obj))) === 1 ) {
+            // return "events." as subKey
+            return array("events." . strtolower( key($obj) ) => $obj[ key($obj) ] );
+        } else {
+            // check if subKey is in events or attributes
+            $acceptedScopes = array("attributes", "events");
+            $keyscope = strtolower( explode(".", key($obj))[0] );
+            if ( in_array( $keyscope, $acceptedScopes, true) ) {
+                return array( strtolower( key($obj) ) => $obj[key($obj)] );
+            } else {
+                $keyValue = strtolower( explode(".", key($obj))[1] );
+                return array("events." . $keyValue => $obj[key($obj)] );
+            }
+        }
     }
 
     /**
@@ -61,21 +83,18 @@ class SearchController extends AppController {
      * @todo 
      */
     private function __checkLevelCount($query) {
-        return count($query[0]);
-        if (count($query[0]) !== 1){
-            // throw new BadRequestException("error : First level of your query key have more than 1 object. Help : Try with only {key:value} like { attributes.tag : type:OSINT }");
-        }elseif (count($query[0]) === 1 ){
-            if ( strtolower(key($query[0])) !== "or" && strtolower(key($query[0])) !== "and" ) {
-                $countKey = count(explode(".", key($query[0])));
-                // no scope specified make "events" as default
-                if ( $countKey === 1 ) {
-                    return array("events.".key($query[0]) => $query[0][key($query[0])] );
-                } else {
-                    return $query[0];
-                }
+        if (count($query) !== 1) {
+            $message = "error : First level of your query key have more than 1 object."
+                . " Try with only [{key:value}] like [{ attributes.tag : type:OSINT }]"
+                . " or [{OR:[{key:value},{key:value}]";
+            throw new BadRequestException($message);
+        } else {
+            if (in_array(strtolower( key($query[0]) ), array("and", "or") )) {
+                return $this->__checkCompositeKey($query[0]);
+            } else {
+                return array( strtolower( key($query[0]) ) => $query[0][ key($query[0]) ]);
             }
         }
-        return False;
     }
     
 
@@ -85,23 +104,37 @@ class SearchController extends AppController {
      * @todo 
      */
     private function __getParamsData($rawData) {
-        $limit = 0;
-        $offset = 0;
-        if (isset($rawData['limit'])) {
-            if (is_numeric($rawData['limit']) && $rawData['limit'] > 0){
-                $limit = $rawData['limit'];
+        $paramArray = array('limit', 'offset');
+        foreach ($paramArray as $p) {
+            if (isset($rawData[$p]) && is_numeric($rawData[$p]) ) {
+                ${$p} = $rawData[$p];
+            } else {
+                ${$p} = 0;
             }
         }
-        if (isset($rawData['offset'])) {
-            if (is_numeric($rawData['offset']) && $rawData['offset'] > 0){
-                $offset = $rawData['offset'];
-            }
-        }
-        if ($limit === 0 && $offset === 0){
+        // if limit === 0 there is no result to display :(
+        // we just return false
+        if ($limit === 0){
             return false;
         }
         return array('limit' => $limit, 'offset'=> $offset);
     }
+
+    /**
+     * check if key.value is in type definition
+     * @param String @key
+     * @return True|False 
+     */
+    private function __isValidtype($attributeTypes) {
+        foreach ($attributeTypes as $aT) {
+            if ( in_array( $aT, $this->Attribute->typeDefinitions, true) ) {
+                throw new BadRequestException("Type in value is not a valide type");
+            }
+        }
+        return TRUE;
+    }
+
+
 
     /** 
      * ****** SAMPLE 1
@@ -182,15 +215,74 @@ class SearchController extends AppController {
         $expand = $this->__getExpandData($this->request->data);
         // get specifique param 
         $params = $this->__getParamsData($this->passedArgs);
-
         // get array in query key
-        // $debug['query_raw'] = $this->request->data['query'];
-        $query = $this->__getQueryData($this->request->data);
-        // $this->__checkLevelCount($query);
+        $query = $this->__checkLevelCount(
+            $this->__getQueryData($this->request->data)
+        );
+        
+        // $debug['query.key.scope'] = explode(".", key($query))[0];
+        // $debug['query.key.value'] = explode(".", key($query))[1];
+        // $debug['query.value'] = $query[key($query)];
+        // key  is not and/or 
+        $this->loadModel('Attribute');
+        if( !in_array(key($query), array("and", "or")) ) {
+            // check for valide type
+            $parameters = array('type');
+		    foreach ($parameters as $param) {
+                if( explode(".", key($query))[1] === $param ) {
+                    // use dynamique valid function from param
+                    $checkFunction = "__isValid" . $param;
+                    if(function_exists($checkFunction)) {
+                        $this->$checkFunction( $query[key($query)] );
+                      }
+                    
+
+                }
+            }
 
 
-        // $debug['tmp'] = $query[0][key($query[0])];
-        $debug['tmp'] = $this->__checkLevelCount($query);
+
+
+            // if( explode(".", key($query))[1] === "type" ) {
+            //     // if not valid, retrun a exception
+            //     $this->__isValidType( $query[key($query)] );
+            //     // $debug['tmp'] = $this->__isValidType( $query[key($query)] );
+            //     $conditions['AND'] = array();
+
+            // }
+        }
+
+        // $this->loadModel('Attribute');
+        // $debug['tmp'] = in_array( explode(".", key($query))[1], $this->Attribute->typeDefinitions, true);
+
+        // todo update for each key
+        // if( !in_array(key($query), array("and", "or")) ) {
+        //     if( explode(".", key($query))[1] === "type" ) {
+        //         $debug['tmp'] = $this->__isValidType( $query[key($query)] );
+
+        //     }
+            // if ( $this->__isValidType( key($query) ) ) {
+            //     $debug['tmp'] = key($query);
+            // }            
+        // }
+        
+        // generate condition recursively
+        // $debug['tmp'] = key($query);
+        
+        // if ( strtolower(key($query[0])) !== "or" && strtolower(key($query[0])) !== "and" ) {
+        //     if ( $this->__isValidType( key($query[0]) ) ) {
+
+        //     }
+        // }
+        // $this->loadModel('Attribute');
+        // $debug['tmp'] = $this->Attribute->typeDefinitions;
+        
+
+
+
+
+
+
 
 
 
