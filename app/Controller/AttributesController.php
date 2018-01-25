@@ -1726,7 +1726,6 @@ class AttributesController extends AppController {
 	}
 
 
-
 	// Use the rest interface to search for attributes. Usage:
 	// MISP-base-url/attributes/restSearch/[api-key]/[value]/[type]/[category]/[orgc]
 	// value, type, category, orgc are optional
